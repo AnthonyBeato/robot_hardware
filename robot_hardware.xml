@@ -1,0 +1,11 @@
+<library path="hardware_robot">
+    <class name="robot_hardware/RobotHardware"
+        type="robot_hardware::RobotHardware"
+        base_class_type="hardware_interface::SystemInterface"
+    >
+        <description>
+            Implementando TI-RSLK MAX hardware interface
+        </description>
+
+    </class>
+</library>
