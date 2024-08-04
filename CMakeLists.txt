@@ -1,86 +1,76 @@
 cmake_minimum_required(VERSION 3.8)
-project(robot_hardware)
+project(robot_hardware LANGUAGES CXX)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
+  add_compile_options(-Wall -Wextra)
 endif()
 
 # find dependencies
-find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(hardware_interface REQUIRED)
-find_package(pluginlib REQUIRED)
-find_package(ros2_control REQUIRED)
-find_package(controller_manager REQUIRED)
-
-
-add_library(
-  ${PROJECT_NAME} 
-  SHARED
-  src/robot_hardware.cpp
-)
-
-target_include_directories(
-  ${PROJECT_NAME}
-  PRIVATE
-  include
-)
-
-ament_target_dependencies(
-  ${PROJECT_NAME}
-  rclcpp
-  rclcpp_lifecycle
+set(THIS_PACKAGE_INCLUDE_DEPENDS
   hardware_interface
   pluginlib
-  ros2_control
-  controller_manager
+  rclcpp
+  rclcpp_lifecycle
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE "JOINT_STATE_BROADCASTER_BUILDING_DLL")
-target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB_DISABLE_BOOST_FUNCTIONS")
+# find dependencies
+find_package(ament_cmake REQUIRED)
+foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
+  find_package(${Dependency} REQUIRED)
+endforeach()
+
+
+## COMPILE
+add_library(
+  robot_hardware
+  SHARED
+  hardware/robot_hardware.cpp
+
+)
+target_compile_features(robot_hardware PUBLIC cxx_std_17)
+target_include_directories(robot_hardware PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
+  $<INSTALL_INTERFACE:include/robot_hardware>
+)
+ament_target_dependencies(
+  robot_hardware PUBLIC
+  ${THIS_PACKAGE_INCLUDE_DEPENDS}
+)
+
+target_link_libraries(robot_hardware PUBLIC serial)
+
+# Causes the visibility macros to use dllexport rather than dllimport,
+# which is appropriate when building the dll but not consuming it.
+target_compile_definitions(${PROJECT_NAME} PRIVATE "ROBOT_HARDWARE_BUILDING_DLL")
+
+# Export hardware plugins
 pluginlib_export_plugin_description_file(hardware_interface robot_hardware.xml)
 
+# INSTALL
 install(
-  TARGETS ${PROJECT_NAME}
-  DESTINATION lib
+  DIRECTORY hardware/include/
+  DESTINATION include/robot_hardware
 )
-
 install(
-  DIRECTORY include/
-  DESTINATION include
+  DIRECTORY description/launch description/ros2_control description/urdf description/rviz
+  DESTINATION share/robot_hardware
 )
-
 install(
-  DIRECTORY config description launch worlds
-  DESTINATION share/${PROJECT_NAME}
+  DIRECTORY bringup/launch bringup/config
+  DESTINATION share/robot_hardware
+)
+install(TARGETS robot_hardware
+  EXPORT export_robot_hardware
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
+  find_package(ament_cmake_gtest REQUIRED)
 endif()
 
-ament_export_include_directories(
-  include
-)
-ament_export_libraries(
-  ${PROJECT_NAME}
-)
-ament_export_dependencies(
-  hardware_interface
-  pluginlib
-  rclcpp
-  rclcpp_lifecycle
-  ros2_control
-  controller_manager
-)
-
+## EXPORTS
+ament_export_targets(export_robot_hardware HAS_LIBRARY_TARGET)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_package()

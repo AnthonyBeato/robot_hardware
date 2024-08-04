@@ -1,10 +1,10 @@
-<library path="hardware_robot">
+<library path="robot_hardware">
     <class name="robot_hardware/RobotHardware"
         type="robot_hardware::RobotHardware"
         base_class_type="hardware_interface::SystemInterface"
     >
         <description>
-            Implementando TI-RSLK MAX hardware interface
+            Implementando TI-RSLK MAX hardware interface usando el ejemplo de robot. Usa el command de velocidad y el state de posicion. Esta es la interfaz para un differential-drive robot. 
         </description>
 
     </class>

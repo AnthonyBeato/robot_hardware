@@ -10,8 +10,27 @@
 #include "rclcpp_lifecycle/state.hpp"
 #include "robot_hardware/visibility_control.h"
 
+#include "robot_hardware/msp432_comms.hpp"
+#include "robot_hardware/wheel.hpp"
+
 namespace robot_hardware {
     class RobotHardware : public hardware_interface::SystemInterface {
+        struct Config
+        {
+            std::string left_wheel_name = "";
+            std::string right_wheel_name = "";
+            float loop_rate = 0.0;
+            std::string device = "";
+            int baud_rate = 0;
+            int timeout_ms = 0;
+            int enc_counts_per_rev = 0;
+            int pid_p = 0;
+            int pid_d = 0;
+            int pid_i = 0;
+            int pid_o = 0;
+        };
+
+
         public:
         RCLCPP_SHARED_PTR_DEFINITIONS(RobotHardware)
 
@@ -28,6 +47,9 @@ namespace robot_hardware {
         std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
     
         ROBOT_HARDWARE_PUBLIC
+        hardware_interface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & previous_state) override;
+
+        ROBOT_HARDWARE_PUBLIC
         hardware_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
 
         ROBOT_HARDWARE_PUBLIC
@@ -40,9 +62,11 @@ namespace robot_hardware {
         hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
         private:
-        std::vector<double> hw_commands_;
-        std::vector<double> hw_states_position_;
-        std::vector<double> hw_states_velocity_;
+        
+        MSP432Comms comms_;
+        Config cfg_;
+        Wheel wheel_l_;
+        Wheel wheel_r_;
     };
 }
 #endif
