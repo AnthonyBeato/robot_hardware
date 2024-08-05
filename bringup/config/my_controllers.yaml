@@ -6,7 +6,7 @@ controller_manager:
     diff_base_controller:
       type: diff_drive_controller/DiffDriveController
 
-    joint_broad:
+    joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
 diff_base_controller:

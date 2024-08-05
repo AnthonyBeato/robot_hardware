@@ -41,10 +41,10 @@ def generate_launch_description():
         arguments=["diff_base_controller"]
     )
 
-    joint_broad_spawner = Node(
+    joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_broad"]
+        arguments=["joint_state_broadcaster"]
     )
 
     # Launch a los files
@@ -53,5 +53,5 @@ def generate_launch_description():
         gazebo,
         spawn_entity,
         diff_drive_spawner,
-        joint_broad_spawner
+        joint_state_broadcaster_spawner
     ])
