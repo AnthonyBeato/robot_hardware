@@ -18,7 +18,7 @@ diff_base_controller:
 
     left_wheel_names: ['left_wheel_joint']
     right_wheel_names: ['right_wheel_joint']
-    wheel_separation: 0.17
+    wheel_separation: 0.125
     wheel_radius: 0.035
   
     use_stamped_vel: false
